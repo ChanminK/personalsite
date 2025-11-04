@@ -1,18 +1,13 @@
 :root{
-  --c0:#150e10; 
-  --c1:#272739; 
-  --c2:#393849; 
-  --c3:#3b4152; 
-  --c4:#4f5a64; 
-  --c5:#77888c; 
+  --bg:#000;
+  --ink:#fff;
+  --line:#000;
+}
 
-  --bg: var(--c0);
-  --panel: var(--c1);
-  --panel2: var(--c2);
-  --border: var(--c3);
-  --accent: var(--c4);
-  --muted: var(--c5);
-  --ink: #e8eff2;         
+:root[data-theme="light"]{
+  --bg:#fff;
+  --ink:#000;
+  --line:#000;
 }
 
 *{box-sizing:border-box}
@@ -23,69 +18,52 @@ body{
   background: var(--bg);
   color: var(--ink);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  line-height:1.45;
+  line-height:1.4;
   -webkit-font-smoothing: none; 
-  -moz-osx-font-smoothing: auto;
 }
 
 .wrap{
     max-width:880px;
-    margin:0 auto;
-    padding:16px;
+    margin:80px auto 40px;
+    padding:0 16px;
 }
 
-.block{
-  background: var(--block);
-  border: 2px solid var(--line);
-  padding: 16px;
-  margin-bottom: 16px;
+.topbar{
+  position:fixed; top:0; left:0; right:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; border-bottom:2px solid var(--ink);
+  background:var(--bg);
 }
-.b-solid { outline: 2px solid var(--block2); outline-offset: -6px; }
+.site-title{font-weight:800; letter-spacing:.03em}
+.invert-btn{
+  appearance:none; background:transparent; color:var(--ink);
+  border:2px solid var(--ink); padding:6px 10px; cursor:pointer;
+  font-weight:700; text-transform:lowercase;
+}
 
-.h-title{
-  margin: 0 0 6px 0;
-  font-size: clamp(22px, 4.5vw, 36px);
-  text-transform: none;
-  letter-spacing: 0.5px;
-}
-.h-sub{
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-.h-section{
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  text-transform: lowercase;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 6px;
-}
+h1{margin:0 0 8px 0; font-size:clamp(22px,4.5vw,36px)}
+h2{margin:24px 0 8px 0; font-size:18px; text-transform:lowercase; border-bottom:2px solid var(--ink); padding-bottom:4px}
 
 .row{
   display: grid;
   grid-template-columns: 120px 1fr;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink);
 }
 .row:last-child{ border-bottom: 0; }
 
 .label{
-  color: var(--muted);
-  text-transform: lowercase;
-  font-size: 14px;
+  opacity:.7
 }
 .value{
-  font-size: 14px;
   word-break: break-word;
 }
 
 .repeat-line{
   white-space: nowrap;            
-  overflow: hidden;               
-  user-select: all;               
+  overflow: hidden;                            
 }
 .repeat-item{
   display: inline;
-  color: var(--accent);
 }

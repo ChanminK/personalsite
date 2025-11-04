@@ -1,35 +1,39 @@
 ---
 import "../styles/global.css";
-
-const GH = "https://github.com/ChanminK";
-const repeat = Array.from({ length: 24 }, () => GH);
+import Topbar from "../components/Topbar.astro";
+const BASE = import.meta.env.BASE_URL;
 ---
 
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href={`${BASE}favicon.svg`} />
+    <link rel="shortcut icon" type="image/svg+xml" href={`${BASE}favicon.svg`} />
     <title>alive</title>
   </head>
   <body>
-    <div class="wrap">
+    <header class="topbar">
+      <div class="site-title">alive</div>
+      <button id="toggleTheme" class="invert-btn" aria-pressed="false" aria-label="Invert site">
+        invert
+      </button>
+    </header>
 
-      <header class="block b-solid">
-        <h1 class="h-title">Hi, I'm Alive</h1>
-        <p class="h-sub">I'm a Junior in high school, and I create stuff</p>
-      </header>
+    <main class="wrap">
+      <h1>Hi, I'm Alive</h1>
+      <p>I'm a Junior in high school, and I create stuff</p>
 
-      <section class="block b-solid">
-        <h2 class="h-section">my socials</h2>
+      <section>
+        <h2>my socials</h2>
 
         <div class="row">
           <div class="label">github</div>
           <div class="value">
-            <div class="repeat-line" title="github link repeated horizontally">
-              {repeat.map((r, i) => (
+            <div class="repeat-line">
+              {Array.from({ length: 24 }).map((_, i) => (
                 <span class="repeat-item" key={i}>
-                  {r}
-                  {i < repeat.length - 1 ? "  •  " : ""}
+                  https://github.com/ChanminK{ i < 23 ? "  •  " : "" }
                 </span>
               ))}
             </div>
@@ -46,11 +50,37 @@ const repeat = Array.from({ length: 24 }, () => GH);
           <div class="value">thisischanmin.gmail.com</div>
         </div>
       </section>
+    </main>
 
-      <footer class="ftr">
-        <span>© {new Date().getFullYear()} alive</span>
-      </footer>
-    </div>
+    <script is:inline>
+      const root = document.documentElement;
+      const key = 'theme';
+	  const BASE = `${BASE}`;
+
+      const saved = localStorage.getItem(key);
+      if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+
+      function setIcon() {
+        const isLight = root.dataset.theme === 'light';
+        const file = isLight ? 'faviconinvert.svg' : 'favicon.svg';
+        const href = BASE + file + '?v=' + (isLight ? '1' : '0'); // cache-bust
+
+        document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(link => {
+          link.setAttribute('type', 'image/svg+xml');
+          link.setAttribute('href', href);
+        });
+      }
+      setIcon();
+
+      const btn = document.getElementById('toggleTheme');
+      btn?.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        localStorage.setItem(key, next);
+        btn.setAttribute('aria-pressed', String(next === 'light'));
+        setIcon();
+      });
+    </script>
   </body>
 </html>
 
