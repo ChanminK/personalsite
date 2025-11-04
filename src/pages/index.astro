@@ -1,0 +1,72 @@
+---
+import "../styles/global.css";
+
+const socials = [
+  { href: "https://github.com/ChanminK", img: "/assets/github.png", alt: "GitHub" },
+];
+
+const tools = [
+  { href: "https://lospec.com/palette-list", label: "Lospec — palettes" },
+  { href: "https://coolors.co/", label: "Coolors — palettes" },
+  { href: "https://accessiblepalette.com/", label: "Color Palette Contrast Checker" },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="/favicon.svg" />
+    <title>alive // personal</title>
+    <meta name="description" content="alive — retro-futuristic personal site." />
+  </head>
+  <body>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="wrap">
+
+      <header class="hdr">
+        <div class="logo">alive</div>
+        <nav class="nav">
+          {socials.map(s => (
+            <a href={s.href} class="icon" target="_blank" rel="noreferrer" aria-label={s.alt}>
+              <img src={s.img} alt={s.alt} />
+            </a>
+          ))}
+        </nav>
+      </header>
+
+      <main class="main">
+        <section class="panel hero">
+          <h1 class="title">building small, bright things at night</h1>
+          <p class="lede">
+            retro edges, future intent. this place is a sketchbook for code, pixels, and ideas.
+          </p>
+        </section>
+
+        <section class="grid">
+          <article class="card">
+            <h2 class="tag">now</h2>
+            <p>shipping tiny projects, exploring graphics, learning by doing.</p>
+          </article>
+          <article class="card">
+            <h2 class="tag">stack</h2>
+            <p>astro • css variables • minimal js (islands later).</p>
+          </article>
+          <article class="card">
+            <h2 class="tag">palette</h2>
+            <ul class="chips">
+              {["#150e10","#272739","#393849","#3b4152","#4f5a64","#77888c"].map(c => (
+                <li class="chip" style={{background:c}} title={c}></li>
+              ))}
+            </ul>
+          </article>
+        </section>
+      </main>
+
+      <footer class="ftr">
+        <span>© {new Date().getFullYear()} alive</span>
+      </footer>
+    </div>
+  </body>
+</html>
+
