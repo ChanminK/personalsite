@@ -4,6 +4,7 @@ const links = [
   { href: "/", label: "home" },
   { href: "/projects", label: "my projects" },
   { href: "/logbook", label: "logbook" },
+  { href: BASE + "blog",     label: "blog" },
 ];
 
 ---
@@ -18,30 +19,33 @@ const links = [
 </header>
 
 <script is:inline>
-  const BASE = "${BASE}";
-  const root = document.documentElement;
-  const KEY = 'theme';
+  (function(){
+    var root = document.documentElement;
+    var base = root.getAttribute('data-base') || '/'; // read from <html data-base>
+    var KEY = 'theme';
 
-  const saved = localStorage.getItem(KEY);
-  if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+    var saved = localStorage.getItem(KEY);
+    if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
 
-  function setIcon() {
-    const isLight = root.dataset.theme === 'light';
-    const file = isLight ? 'faviconinvert.svg' : 'favicon.svg';
-    const href = BASE + file + '?v=' + (isLight ? '1' : '0');
-    document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(link => {
-      link.setAttribute('type', 'image/svg+xml');
-      link.setAttribute('href', href);
-    });
-  }
-  setIcon();
-
-  const btn = document.getElementById('toggleTheme');
-  btn?.addEventListener('click', () => {
-    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-    root.dataset.theme = next;
-    localStorage.setItem(KEY, next);
-    btn.setAttribute('aria-pressed', String(next === 'light'));
+    function setIcon() {
+      var isLight = root.dataset.theme === 'light';
+      var file = isLight ? 'faviconinvert.svg' : 'favicon.svg';
+      var href = base + file + '?v=' + (isLight ? '1' : '0');
+      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(function(link){
+        link.setAttribute('type', 'image/svg+xml');
+        link.setAttribute('href', href);
+      });
+    }
     setIcon();
-  });
+
+    var btn = document.getElementById('toggleTheme');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      localStorage.setItem(KEY, next);
+      btn.setAttribute('aria-pressed', String(next === 'light'));
+      setIcon();
+    });
+  })();
 </script>

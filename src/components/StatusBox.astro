@@ -1,219 +1,113 @@
 ---
 interface Props {
-  label?: string;           // e.g. "Now Playing"
-  value?: string;           // e.g. "Lo-fi beats to think to"
-  mode?: 'docked' | 'bounce'; // 'docked' (default) or 'bounce'
-  storageKey?: string;      // unique if you add more status boxes
+  label?: string;
+  value?: string;
+  mode?: 'docked' | 'bounce';
+  storageKey?: string;
 }
-
 const {
   label = 'Now Thinking',
   value = 'Booting ideas…',
   mode = 'docked',
-  storageKey = 'statusbox-closed'
+  storageKey = 'statusbox'
 } = Astro.props;
 ---
 
 <style>
-  :root {
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    --fg: var(--color-fg, #111);
-    --bg: var(--color-bg, #fff);
-    --fg-invert: var(--color-fg-invert, #fff);
-    --bg-invert: var(--color-bg-invert, #111);
-    --line: color-mix(in sRGB, var(--fg) 22%, transparent);
-    --glow: 0 0 0.5rem color-mix(in sRGB, var(--fg) 30%, transparent);
-  }
-
-  .wrap {
-    display: grid;
-    place-items: center;
-    margin-block: clamp(2rem, 6vh, 8rem);
-  }
-
-  .box {
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    color: var(--fg);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    padding: 0.75rem 1rem;
-    box-shadow: var(--glow);
-    display: inline-flex;
-    gap: 0.75rem;
-    align-items: center;
-    line-height: 1.2;
-    position: relative;
-    max-width: min(90vw, 48rem);
-    white-space: nowrap;
-  }
-
-  .dot {
-    width: 0.5rem; height: 0.5rem;
-    border: 1px solid var(--line);
-    background: color-mix(in sRGB, var(--fg) 6%, transparent);
-  }
-
-  .label { opacity: 0.8; }
-  .sep::before { content: '—'; opacity: 0.35; margin-inline: 0.5rem; }
-
-  .btn {
-    margin-left: 0.25rem;
-    border: 1px solid var(--line);
-    background: transparent;
-    color: var(--fg);
-    font: inherit;
-    padding: 0.1rem 0.35rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  /* Bounce mode styling (positioned) */
-  .floating {
+    .floating {
     position: fixed;
-    inset: auto auto auto auto;
-    top: 20vh; left: 10vw;
-    z-index: 50;
-    margin: 0; /* overrides docked spacing */
-  }
-
-  /* Retro micro-scanline on the box */
-  .scanlines {
-    position: relative;
-    isolation: isolate;
-  }
-  .scanlines::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.05) 1px,
-        transparent 1px
-      );
-    background-size: 100% 2px;
-    opacity: 0.12;
-    mix-blend-mode: multiply;
-    border-radius: inherit;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-fg: #ddd;
-      --color-bg: #0a0a0a;
-      --color-fg-invert: #0a0a0a;
-      --color-bg-invert: #ddd;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .floating { transition: none !important; }
+    left: 12vw;
+    top: 18vh;
+    margin: 0;
+    z-index: 40;
   }
 </style>
 
-<div class={mode === 'bounce' ? 'floating' : 'wrap'} data-mode={mode}>
-  <div class="box scanlines" role="status" aria-live="polite" id="statusbox">
-    <span class="dot" aria-hidden="true"></span>
-    <span class="label">{label}</span>
-    <span class="sep"></span>
-    <span class="value">{value}</span>
-    <button class="btn" aria-label="Close status" data-close>&times;</button>
+<div
+  class={mode === 'bounce' ? 'floating status-wrap' : 'status-wrap'}
+  data-key={storageKey}
+  data-mode={mode}
+  data-label={label}
+  data-value={value}
+>
+  <div class="status" role="status" aria-live="polite">
+    <span class="tag">{label}:</span>&nbsp;<span class="value">{value}</span>
+    <button class="x" aria-label="Close status" data-close>&times;</button>
   </div>
 </div>
 
-{/* Hydrate for interactivity only if needed */}
-{ mode === 'bounce'
-  ? <script is:ts>
-      // Minimal, dependency-free “DVD bounce”.
-      // Respects reduced motion, and remembers close in sessionStorage.
-      const key = {storageKey: '{{storageKey}}'};
-      const closed = sessionStorage.getItem(key.storageKey) === '1';
-      const root = document.querySelector('[data-mode="bounce"]') as HTMLElement | null;
-      const box = document.getElementById('statusbox') as HTMLElement | null;
-      const btn = box?.querySelector('[data-close]') as HTMLButtonElement | null;
+<script is:inline>
+(() => {
+  // Select the wrapper without any Astro interpolation:
+  const root = (document.currentScript && document.currentScript.previousElementSibling) as HTMLElement | null;
+  if (!root) return;
 
-      if (root && box) {
-        if (closed) {
-          root.style.display = 'none';
-        } else {
-          let x = root.offsetLeft || 80;
-          let y = root.offsetTop || 120;
-          let vx = 1.1;  // px per frame
-          let vy = 1.0;
-          let raf = 0;
-          const margin = 8;
+  const key  = root.getAttribute('data-key')  || 'statusbox';
+  const mode = root.getAttribute('data-mode') || 'docked';
+  const box  = root.querySelector('.status') as HTMLElement | null;
+  const btn  = root.querySelector('[data-close]') as HTMLButtonElement | null;
+]
+  if (sessionStorage.getItem(key + '-closed') === '1') {
+    root.style.display = 'none';
+    return;
+  }
 
-          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const step = () => {
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            const rect = box.getBoundingClientRect();
-            const bw = rect.width;
-            const bh = rect.height;
+  let stop = () => {};
 
-            x += vx; y += vy;
+  btn?.addEventListener('click', () => {
+    sessionStorage.setItem(key + '-closed', '1');
+    try { stop(); } catch {}
+    root.style.display = 'none';
+  });
 
-            if (x <= margin || x + bw >= vw - margin) vx *= -1;
-            if (y <= margin || y + bh >= vh - margin) vy *= -1;
+  if (mode !== 'bounce' || !box) return;
 
-            root.style.left = Math.max(margin, Math.min(vw - bw - margin, x)) + 'px';
-            root.style.top  = Math.max(margin, Math.min(vh - bh - margin, y)) + 'px';
+  let raf = 0;
+  let x = Math.max(8, root.offsetLeft || innerWidth  * 0.12);
+  let y = Math.max(8, root.offsetTop  || innerHeight * 0.18);
+  let vx = 1.1, vy = 1.0; // px/frame
+  const M = 8;
+  let reduce = false;
+  try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch {}
 
-            raf = requestAnimationFrame(step);
-          };
+  function frame(){
+    const r  = box.getBoundingClientRect();
+    const bw = r.width, bh = r.height;
 
-          const start = () => { if (!reduce) raf = requestAnimationFrame(step); };
-          const stop  = () => { if (raf) cancelAnimationFrame(raf); raf = 0; };
+    x += vx; y += vy;
+    if (x <= M || x + bw >= innerWidth  - M) vx *= -1;
+    if (y <= M || y + bh >= innerHeight - M) vy *= -1;
 
-          // drag to reposition (mouse only, simple)
-          let dragging = false, dx = 0, dy = 0;
-          box.addEventListener('mousedown', (e) => {
-            dragging = true; stop();
-            const rect = root.getBoundingClientRect();
-            dx = e.clientX - rect.left; dy = e.clientY - rect.top;
-            document.body.style.userSelect = 'none';
-          });
-          window.addEventListener('mousemove', (e) => {
-            if (!dragging) return;
-            root.style.left = (e.clientX - dx) + 'px';
-            root.style.top  = (e.clientY - dy) + 'px';
-          });
-          window.addEventListener('mouseup', () => {
-            dragging = false; document.body.style.userSelect = '';
-            start();
-          });
+    root.style.left = Math.max(M, Math.min(innerWidth  - bw - M, x)) + 'px';
+    root.style.top  = Math.max(M, Math.min(innerHeight - bh - M, y)) + 'px';
 
-          btn?.addEventListener('click', () => {
-            sessionStorage.setItem(key.storageKey, '1');
-            stop();
-            root.style.display = 'none';
-          });
+    raf = requestAnimationFrame(frame);
+  }
+  function start(){ if (!reduce && !raf) raf = requestAnimationFrame(frame); }
+  stop = function(){ if (raf) cancelAnimationFrame(raf); raf = 0; };
 
-          document.addEventListener('visibilitychange', () => {
-            if (document.hidden) stop(); else start();
-          });
-          window.addEventListener('blur', stop);
-          window.addEventListener('focus', start);
+  let dragging=false, dx=0, dy=0;
+  box.addEventListener('mousedown', (e)=>{
+    dragging=true; stop();
+    const rr = root.getBoundingClientRect();
+    dx = e.clientX - rr.left; dy = e.clientY - rr.top;
+    document.body.style.userSelect='none';
+  });
+  window.addEventListener('mousemove', (e)=>{
+    if (!dragging) return;
+    root.style.left = (e.clientX - dx) + 'px';
+    root.style.top  = (e.clientY - dy) + 'px';
+  });
+  window.addEventListener('mouseup', ()=>{
+    if (!dragging) return;
+    dragging=false; document.body.style.userSelect='';
+    start();
+  });
 
-          start();
-        }
-      }
-    </script>
-  : <script is:ts>
-      // Docked mode: only handle close, keep spacing above footer.
-      const key = {storageKey: '{{storageKey}}'};
-      const root = document.querySelector('.wrap') as HTMLElement | null;
-      const btn = root?.querySelector('[data-close]') as HTMLButtonElement | null;
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  window.addEventListener('blur',  stop);
+  window.addEventListener('focus', start);
 
-      if (root) {
-        const closed = sessionStorage.getItem(key.storageKey) === '1';
-        if (closed) root.style.display = 'none';
-        btn?.addEventListener('click', () => {
-          sessionStorage.setItem(key.storageKey, '1');
-          root.style.display = 'none';
-        });
-      }
-    </script>
-}
+  start();
+})();
+</script>

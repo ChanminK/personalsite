@@ -1,0 +1,55 @@
+---
+import "../../styles/global.css";
+import Topbar from "../../components/Topbar.astro";
+
+const postsGlob = import.meta.glob("../../content/posts/*.md", { eager: true }) as Record<
+  string,
+  {
+    frontmatter: { title: string; date: string; summary?: string; tags?: string[] };
+    default: any;
+  }
+>;
+
+const posts = Object.entries(postsGlob)
+  .map(([path, mod]) => {
+    const slug = path.split("/").pop()!.replace(".md", "");
+    const { title, date, summary = "", tags = [] } = mod.frontmatter || {};
+    return { slug, title, date, summary, tags };
+  })
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Blog · alive</title>
+  </head>
+  <body>
+    <Topbar />
+
+    <main class="wrap">
+      <h1>blog</h1>
+      <p class="muted">mono thoughts, minimal UI.</p>
+
+      <section class="cards" style="margin-top:12px">
+        {posts.map((p) => (
+          <article class="card">
+            <div class="repo-title">
+              <a href={`/blog/${p.slug}`} style="color:inherit; text-decoration:none">{p.title}</a>
+            </div>
+            <div class="repo-meta">
+              <span>{new Date(p.date).toLocaleDateString()}</span>
+              {p.tags.length > 0 && (
+                <span>{p.tags.map((t) => `#${t}`).join(" ")}</span>
+              )}
+            </div>
+            {p.summary && <p class="repo-desc">{p.summary}</p>}
+          </article>
+        ))}
+      </section>
+    </main>
+
+    <footer class="site-footer">made with astro + Need coffee</footer>
+  </body>
+</html>
